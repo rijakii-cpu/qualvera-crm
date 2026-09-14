@@ -21,10 +21,10 @@ const fontMono = Geist_Mono({
 
 export const metadata: Metadata = {
 	title: {
-		default: "Comp AI - CRM",
-		template: "%s · Comp AI CRM",
+		default: "Qualvera CRM",
+		template: "%s · Qualvera CRM",
 	},
-	description: "Customer Relationship Management for Comp AI",
+	description: "Qualvera internal CRM for sales and operations",
 	icons: {
 		icon: [
 			{ url: "/favicon.svg", type: "image/svg+xml" },

@@ -11,19 +11,20 @@
   <img alt="stars" height="21" src="https://afterglow.watch/badge/trycompai/crm">
 </p>
 
-<h1 align="center">CRM</h1>
+<h1 align="center">Qualvera CRM</h1>
 
 <p align="center">
-  <strong>Comp AI CRM is an open source, CRM designed for AI agents.</strong><br>
-  Agentic-first CRM.
+  <strong>Qualvera internal single-tenant CRM for sales and operations.</strong><br>
+  Fork of Comp AI CRM. The agent and evidence model stay intact.
 </p>
 
 <p align="center">
+  <a href="./QUALVERA.md"><strong>Qualvera</strong></a> ·
+  <a href="./DEPLOY.md"><strong>Deploy</strong></a> ·
   <a href="#the-agent"><strong>The agent</strong></a> ·
   <a href="#the-stack"><strong>Stack</strong></a> ·
   <a href="#quick-start"><strong>Quick start</strong></a> ·
   <a href="#configuration"><strong>Configuration</strong></a> ·
-  <a href="#deploying"><strong>Deploying</strong></a> ·
   <a href="./CONTRIBUTING.md"><strong>Contributing</strong></a>
 </p>
 
@@ -41,6 +42,12 @@
 ---
 
 ## What this is
+
+Qualvera CRM is Qualvera's internal CRM. It is single-tenant on purpose. It is
+not Company Knowledge and must never merge with `company-knowledge-app`.
+Accounts, contacts, and later optional CK links are described in
+[`QUALVERA.md`](./QUALVERA.md). Richard's deploy and sign-in steps are in
+[`DEPLOY.md`](./DEPLOY.md).
 
 Most CRMs are a database with a form in front of it. The AI ones bolt a chat box onto
 the side of that form. Both leave the actual work — finding out what is true, and
@@ -192,7 +199,7 @@ Written up where the work happens, not in a style guide:
 You need [Bun](https://bun.com) and Docker.
 
 ```sh
-git clone https://github.com/trycompai/crm.git && cd crm
+git clone https://github.com/rijakii-cpu/qualvera-crm.git && cd qualvera-crm
 cp .env.example .env          # then fill in the values below
 bun install
 
@@ -295,6 +302,7 @@ addresses, or a mix:
 ALLOWED_SIGN_IN="acme.com"                       # everyone at your company
 ALLOWED_SIGN_IN="acme.com,contractor@gmail.com"  # …plus one outsider
 ALLOWED_SIGN_IN="you@gmail.com"                  # a one-person install
+ALLOWED_SIGN_IN="rijakii@gmail.com"              # Qualvera founder, to start
 ```
 
 ## Configuration
@@ -339,17 +347,12 @@ would have set. It refuses to run with `NODE_ENV=production`.
 
 ## Deploying
 
-Three deployments and a Postgres: the Next.js app, the NestJS API, and the agent.
-They are independent, and the only thing they must agree on is `DATABASE_URL` and
-`BETTER_AUTH_SECRET` — the API mints the session cookie and the app verifies it, so a
-mismatch is a redirect loop rather than an error.
+Richard: follow [`DEPLOY.md`](./DEPLOY.md). Three Vercel projects (`apps/app`,
+`apps/api`, `apps/agent`) plus Neon Postgres. Sign-in is Google and/or Microsoft
+on `ALLOWED_SIGN_IN`. Start with `rijakii@gmail.com`. OAuth redirect URIs hit
+the **API** origin (`/api/auth/callback/google`, `/api/auth/callback/microsoft`).
 
-Set `API_URL` and `APP_URL` to the real origins, and if the two are on different
-subdomains of one parent, set `AUTH_COOKIE_DOMAIN` to the parent so one cookie covers
-both. Add `http://your-api-host/api/auth/callback/google` — and, if you use Microsoft,
-`http://your-api-host/api/auth/callback/microsoft` — to the provider's
-redirect URIs. Set `CRON_SECRET` and point a scheduler at
-`POST /internal/sync/mailboxes` to keep the mailbox sync running.
+There is no live Qualvera CRM URL in this repo yet. Do not invent one.
 
 `apps/api/src/generated/server.ts` is committed and `build` must never regenerate it —
 the generator needs a newer GLIBC than most build images have. Regenerate locally and
