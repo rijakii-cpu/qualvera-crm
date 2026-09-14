@@ -1,7 +1,5 @@
 {
 	"$schema": "https://openapi.vercel.sh/vercel.json",
-	"buildCommand": "bun apps/api/scripts/build-func.mjs",
-	"installCommand": "bun install",
 	"crons": [
 		{
 			"path": "/internal/sync/mailboxes",
