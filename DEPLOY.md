@@ -42,24 +42,9 @@ build the deploy inspector must show a Node function at `/api/index`.
 Dashboard path: Project → Settings → General (Root Directory) and
 Settings → Build and Deployment.
 
-### Apply now on current `release`
-
-These values work before this branch merges. Current `release` writes
-`.vercel/output` only at the repo root.
-
-1. Framework Preset → **Other**.
-2. Root Directory → **empty** (repository root). Not `apps/api` yet.
-3. Include files outside the Root Directory → On.
-4. Install Command → Override → `bun install`.
-5. Build Command → Override → `node apps/api/scripts/build-func.mjs`.
-6. Output Directory → Override off, or Override on and leave the field empty.
-7. Node.js Version → `22.x`.
-8. Deployments → Redeploy. Uncheck "Use existing Build Cache".
-
-### After this branch is on `release`
-
-`vercel.json` pins install and build. Root Directory can stay `apps/api`
-so crons load from that file.
+`vercel.json` pins install and build. Keep Root Directory `apps/api` so
+crons load from that file. Confirm these values if a later deploy looks
+for `public/` again.
 
 | Setting | Required value |
 | --- | --- |
@@ -71,7 +56,8 @@ so crons load from that file.
 | Output Directory | **empty** (no `public`) |
 | Node.js Version | `22.x` |
 
-Then Redeploy `release` again without the build cache.
+If a dashboard override still says `public`, turn Override off. Then
+Redeploy `release` without the build cache.
 
 ## Required environment
 
