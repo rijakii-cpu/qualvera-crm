@@ -100,6 +100,19 @@ full list. Never commit a real secret.
 | `APP_URL` | yes | yes | — | App origin, e.g. `https://<app>.vercel.app` |
 | `AGENT_URL` | yes | yes | yes | Agent origin **with scheme**, e.g. `https://<agent>.vercel.app` |
 
+The browser auth client talks to the **API origin**. The app build inlines
+`API_URL` as `NEXT_PUBLIC_API_URL`. OAuth state and session cookies then
+live on the API host, which is also `/api/auth/callback/*`. Set `API_URL`
+and `APP_URL` on **both** the app and API projects when those hosts are
+`*.vercel.app`. Better Auth `trustedOrigins` already includes `APP_URL`
+and `API_URL`. CORS with credentials already allows the app Origin.
+
+Do **not** set `AUTH_COOKIE_DOMAIN` or `crossSubDomainCookies` for
+`*.vercel.app`. `qualvera-crm-app.vercel.app` and
+`qualvera-crm-api.vercel.app` do not share a cookie domain. Set
+`AUTH_COOKIE_DOMAIN` only when the app and API share a custom parent
+(`.qualvera.com`).
+
 `ALLOWED_SIGN_IN` is the whole authorisation model. An empty list lets
 nobody in. Start with one address; widen to the Qualvera domain later:
 
@@ -164,9 +177,12 @@ Pro. Hobby silently becomes daily.
 4. First successful sign-in creates the workspace membership.
 
 If the sign-in page says there is no method configured, the Google or
-Microsoft pair is missing on the **API** project. If the provider accepts
-the login and the app bounces between `/sign-in` and `/`, `APP_URL` /
-`API_URL` / `BETTER_AUTH_SECRET` do not match across app and API.
+Microsoft pair is missing on the **API** project. If Google returns
+`/sign-in?error=state_mismatch`, the browser stored the OAuth state
+cookie on the app host. The auth client must use `NEXT_PUBLIC_API_URL`.
+If the provider accepts the login and the app bounces between `/sign-in`
+and `/`, `APP_URL` / `API_URL` / `BETTER_AUTH_SECRET` do not match
+across app and API.
 
 ## Deploy order
 
