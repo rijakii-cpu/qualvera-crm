@@ -1,6 +1,6 @@
+import { describe, expect, it } from "bun:test";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "bun:test";
 
 describe("Vercel serverless entry", () => {
 	it("does not live under api/ where Vercel auto-detects filesystem functions", () => {
