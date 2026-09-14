@@ -10,7 +10,6 @@ import {
 	Controller,
 	Get,
 	Logger,
-	Query,
 	Req,
 	Res,
 } from "@nestjs/common";
@@ -34,11 +33,10 @@ export class OAuthStartController {
 			"Redirects to the provider after setting the OAuth state cookie.",
 	})
 	async startSocial(
-		@Query() query: unknown,
 		@Req() request: Request,
 		@Res() response: Response,
 	): Promise<void> {
-		const parsed = socialOAuthStartQuery.safeParse(query);
+		const parsed = socialOAuthStartQuery.safeParse(request.query);
 		if (!parsed.success) {
 			throw new BadRequestException(
 				"Sign-in is missing a provider or a return URL.",
@@ -62,11 +60,10 @@ export class OAuthStartController {
 			"Redirects to the identity provider after setting the OAuth state cookie.",
 	})
 	async startSso(
-		@Query() query: unknown,
 		@Req() request: Request,
 		@Res() response: Response,
 	): Promise<void> {
-		const parsed = ssoOAuthStartQuery.safeParse(query);
+		const parsed = ssoOAuthStartQuery.safeParse(request.query);
 		if (!parsed.success) {
 			throw new BadRequestException(
 				"Sign-in is missing a provider or a return URL.",

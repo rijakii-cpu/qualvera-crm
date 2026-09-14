@@ -44,7 +44,7 @@ function requireApiOrigin(): string {
 	return apiUrl;
 }
 
-function returnUrls(): { callbackURL: string; errorCallbackURL: string } {
+function returnUrls() {
 	const origin = globalThis.window.location.origin;
 	return {
 		callbackURL: `${origin}/`,
