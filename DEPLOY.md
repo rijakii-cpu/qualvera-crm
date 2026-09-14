@@ -101,11 +101,17 @@ full list. Never commit a real secret.
 | `AGENT_URL` | yes | yes | yes | Agent origin **with scheme**, e.g. `https://<agent>.vercel.app` |
 
 The browser auth client talks to the **API origin**. The app build inlines
-`API_URL` as `NEXT_PUBLIC_API_URL`. Sign-in cookies then land on the same
-host as `/api/auth/callback/*`. Set `API_URL` and `APP_URL` on **both**
-the app and API projects when those hosts are `*.vercel.app`. Set
+`API_URL` as `NEXT_PUBLIC_API_URL`. OAuth state and session cookies then
+live on the API host, which is also `/api/auth/callback/*`. Set `API_URL`
+and `APP_URL` on **both** the app and API projects when those hosts are
+`*.vercel.app`. Better Auth `trustedOrigins` already includes `APP_URL`
+and `API_URL`. CORS with credentials already allows the app Origin.
+
+Do **not** set `AUTH_COOKIE_DOMAIN` or `crossSubDomainCookies` for
+`*.vercel.app`. `qualvera-crm-app.vercel.app` and
+`qualvera-crm-api.vercel.app` do not share a cookie domain. Set
 `AUTH_COOKIE_DOMAIN` only when the app and API share a custom parent
-domain (`.qualvera.com`). `*.vercel.app` is not a shared parent.
+(`.qualvera.com`).
 
 `ALLOWED_SIGN_IN` is the whole authorisation model. An empty list lets
 nobody in. Start with one address; widen to the Qualvera domain later:
