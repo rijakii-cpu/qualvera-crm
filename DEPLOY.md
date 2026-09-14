@@ -16,7 +16,7 @@ the `company-knowledge-app` Vercel project or that product's database.
 | --- | --- | --- |
 | Neon Postgres | — | One database for all three apps |
 | Vercel project `qualvera-crm-app` | `apps/app` | Next.js UI |
-| Vercel project `qualvera-crm-api` | `apps/api` | NestJS API, Better Auth, crons |
+| Vercel project `qualvera-crm-api` | *(empty — repository root)* | NestJS API, Better Auth, crons |
 | Vercel project `qualvera-crm-agent` | `apps/agent` | eve research agent |
 
 Use the GitHub repo `rijakii-cpu/qualvera-crm`, production branch `release`.
@@ -36,25 +36,37 @@ The Nest API has no static output.
 must not run it. Turbo `api:build` is that script. The API deploys only
 through `apps/api/scripts/build-func.mjs` (Build Output API v3).
 
+Vercel looks for `.vercel/output` **relative to the project Root Directory**.
+On Vercel the build script writes that folder at `process.cwd()` (the Root
+Directory). The working Root Directory is the **repository root**, not
+`apps/api`.
+
+Root Directory `apps/api` failed on `dpl_6X2DwStsjqmt8RTymT6z1Urm62uh`
+(`STATIC_BUILD_NO_OUT_DIR`). That deploy ran an older `build-func.mjs` that
+wrote output only at the repository root. Do not set Root Directory to
+`apps/api`.
+
 Do not set Output Directory to `public`, `dist`, or `.`. After a successful
 build the deploy inspector must show a Node function at `/api/index`.
 
 Dashboard path: Project → Settings → General (Root Directory) and
 Settings → Build and Deployment.
 
-`vercel.json` pins install and build. Keep Root Directory `apps/api` so
-crons load from that file. Confirm these values if a later deploy looks
-for `public/` again.
+The repository-root `vercel.json` pins install, build, and crons. Confirm
+these values on **qualvera-crm-api**:
 
 | Setting | Required value |
 | --- | --- |
 | Framework Preset | **Other** |
-| Root Directory | `apps/api` |
-| Include files outside Root Directory | **On** |
-| Install Command | `node scripts/install-workspaces.mjs` |
-| Build Command | `node scripts/build-func.mjs` |
+| Root Directory | *(empty)* |
+| Install Command | `bun install` |
+| Build Command | `bun apps/api/scripts/build-func.mjs` |
 | Output Directory | **empty** (no `public`) |
 | Node.js Version | `22.x` |
+
+`qualvera-crm-app` and `qualvera-crm-agent` keep Root Directory `apps/app`
+and `apps/agent`. Those projects do not read the repository-root
+`vercel.json`.
 
 If a dashboard override still says `public`, turn Override off. Then
 Redeploy `release` without the build cache.
@@ -122,8 +134,10 @@ not the Secret ID.
 | `AI_GATEWAY_API_KEY` | Not needed on Vercel (OIDC) |
 | `PERPLEXITY_API_KEY`, `GITHUB_TOKEN`, `BLOB_READ_WRITE_TOKEN` | Agent looks in fewer places. Never throws. |
 
-Crons live in `apps/api/vercel.json`. Minute schedules need Vercel Pro.
-Hobby silently becomes daily.
+Crons live in the repository-root `vercel.json`. The build script does not
+copy them into `.vercel/output/config.json`. The same path in both places
+fails the deploy with `duplicated_cron_job`. Minute schedules need Vercel
+Pro. Hobby silently becomes daily.
 
 ## How Richard signs in
 
@@ -143,7 +157,7 @@ the login and the app bounces between `/sign-in` and `/`, `APP_URL` /
 ## Deploy order
 
 1. Create the Neon project. Copy the pooled URL and the direct URL.
-2. Create the three Vercel projects, each with its root directory.
+2. Create the three Vercel projects. Leave the API Root Directory empty.
 3. Generate `BETTER_AUTH_SECRET`. Put it on app and API.
 4. Set `ALLOWED_SIGN_IN=rijakii@gmail.com` on the API.
 5. Set `DATABASE_URL` (and `DIRECT_DATABASE_URL` if needed) on all three.
