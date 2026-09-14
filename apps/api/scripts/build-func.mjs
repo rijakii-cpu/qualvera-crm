@@ -14,16 +14,8 @@ import { fileURLToPath } from "node:url";
 
 const apiDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const repoRoot = dirname(dirname(apiDir));
-const outDirs = [
-	...new Set(
-		[
-			join(apiDir, ".vercel/output"),
-			join(repoRoot, ".vercel/output"),
-			process.env.VERCEL ? join(process.cwd(), ".vercel/output") : null,
-		].filter(Boolean),
-	),
-];
-const outDir = outDirs[0];
+const vercelRoot = process.env.VERCEL ? process.cwd() : repoRoot;
+const outDir = join(vercelRoot, ".vercel/output");
 const funcDir = join(outDir, "functions/api/index.func");
 const bun = process.env.BUN_BIN || "bun";
 
@@ -181,25 +173,15 @@ writeFileSync(
 		regions: ["iad1"],
 	}),
 );
-const vercelJson = JSON.parse(readFileSync(join(apiDir, "vercel.json"), "utf8"));
-const crons = Array.isArray(vercelJson.crons) ? vercelJson.crons : [];
-
 writeFileSync(
 	join(outDir, "config.json"),
 	JSON.stringify({
 		version: 3,
 		routes: [{ src: "/(.*)", dest: "/api/index" }],
-		crons,
 	}),
 );
 
-for (const extraOutDir of outDirs.slice(1)) {
-	rmSync(extraOutDir, { recursive: true, force: true });
-	mkdirSync(dirname(extraOutDir), { recursive: true });
-	cpSync(outDir, extraOutDir, { recursive: true });
-}
-
-console.log(`✓ built ${outDirs.join(" ")}`);
+console.log(`✓ built ${outDir}`);
 
 const isProductionDeployment = process.env.VERCEL_ENV === "production";
 
