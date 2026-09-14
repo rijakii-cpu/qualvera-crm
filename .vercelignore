@@ -23,6 +23,10 @@ node_modules
 dist
 .vercel/output
 
+# Vercel treats apps/*/api/** as filesystem functions when Root Directory is
+# the repository root. The API handler is bundled from apps/api/serverless.ts.
+apps/api/api
+
 # Nothing here affects the build.
 docs/images
 adrs

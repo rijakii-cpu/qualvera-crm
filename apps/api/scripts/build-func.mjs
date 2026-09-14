@@ -18,6 +18,13 @@ const vercelRoot = process.env.VERCEL ? process.cwd() : repoRoot;
 const outDir = join(vercelRoot, ".vercel/output");
 const funcDir = join(outDir, "functions/api/index.func");
 const bun = process.env.BUN_BIN || "bun";
+const filesystemEntry = join(apiDir, "api/index.ts");
+
+if (existsSync(filesystemEntry)) {
+	throw new Error(
+		"apps/api/api/index.ts is a Vercel filesystem function when Root Directory is the repository root. Production then serves the raw file instead of the bun bundle. The handler lives at apps/api/serverless.ts.",
+	);
+}
 
 const EXTERNALS = [
 	"@nestjs/microservices",
@@ -47,7 +54,7 @@ mkdirSync(funcDir, { recursive: true });
 console.log("• bundling function with bun build...");
 execSync(
 	[
-		`${bun} build api/index.ts`,
+		`${bun} build serverless.ts`,
 		"--target=node",
 		"--format=esm",
 		`--outfile=${JSON.stringify(join(funcDir, "index.mjs"))}`,

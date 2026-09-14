@@ -49,6 +49,12 @@ wrote output only at the repository root. Do not set Root Directory to
 Do not set Output Directory to `public`, `dist`, or `.`. After a successful
 build the deploy inspector must show a Node function at `/api/index`.
 
+The bun bundle is the only production handler. It is built from
+`apps/api/serverless.ts` into `.vercel/output/functions/api/index.func`.
+Do not add a default-export handler under `apps/api/api/`. Vercel then
+serves `/var/task/apps/api/api/index.js` and the function crashes on the
+extensionless `../src/create-app` import (`dpl_8tUjtEfZNTeUw8Ew2W1Y38EbRjHp`).
+
 Dashboard path: Project → Settings → General (Root Directory) and
 Settings → Build and Deployment.
 
