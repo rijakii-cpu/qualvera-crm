@@ -20,12 +20,58 @@ the `company-knowledge-app` Vercel project or that product's database.
 | Vercel project `qualvera-crm-agent` | `apps/agent` | eve research agent |
 
 Use the GitHub repo `rijakii-cpu/qualvera-crm`, production branch `release`.
-Framework: Next.js on the app. Bun on the API (`bun src/main.ts` after
-`apps/api` build). eve / Bun on the agent.
+Framework: Next.js on the app. **Other** on the API (Build Output API, not
+static, not Next.js). eve on the agent.
 
 Migrations run during the **production** API build (`prisma migrate deploy`
 when `VERCEL_ENV === "production"`). Preview deploys share that database
 and do not migrate it. Test schema changes locally.
+
+## `qualvera-crm-api` project settings
+
+A wrong preset looks for `public/` and fails with `STATIC_BUILD_NO_OUT_DIR`.
+The Nest API has no static output.
+
+`apps/api/package.json` `build` is the local Bun server (`dist/`). Vercel
+must not run it. Turbo `api:build` is that script. The API deploys only
+through `apps/api/scripts/build-func.mjs` (Build Output API v3).
+
+Do not set Output Directory to `public`, `dist`, or `.`. After a successful
+build the deploy inspector must show a Node function at `/api/index`.
+
+Dashboard path: Project → Settings → General (Root Directory) and
+Settings → Build and Deployment.
+
+### Apply now on current `release`
+
+These values work before this branch merges. Current `release` writes
+`.vercel/output` only at the repo root.
+
+1. Framework Preset → **Other**.
+2. Root Directory → **empty** (repository root). Not `apps/api` yet.
+3. Include files outside the Root Directory → On.
+4. Install Command → Override → `bun install`.
+5. Build Command → Override → `node apps/api/scripts/build-func.mjs`.
+6. Output Directory → Override off, or Override on and leave the field empty.
+7. Node.js Version → `22.x`.
+8. Deployments → Redeploy. Uncheck "Use existing Build Cache".
+
+### After this branch is on `release`
+
+`vercel.json` pins install and build. Root Directory can stay `apps/api`
+so crons load from that file.
+
+| Setting | Required value |
+| --- | --- |
+| Framework Preset | **Other** |
+| Root Directory | `apps/api` |
+| Include files outside Root Directory | **On** |
+| Install Command | `node scripts/install-workspaces.mjs` |
+| Build Command | `node scripts/build-func.mjs` |
+| Output Directory | **empty** (no `public`) |
+| Node.js Version | `22.x` |
+
+Then Redeploy `release` again without the build cache.
 
 ## Required environment
 
