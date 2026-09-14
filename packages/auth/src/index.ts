@@ -14,6 +14,21 @@ export {
 	isSlackConfigured,
 } from "./env";
 export {
+	issueSocialOAuthStart,
+	issueSsoOAuthStart,
+	OAuthStartError,
+	type OAuthStartResult,
+} from "./oauth-start";
+export { OAUTH_START } from "./oauth-start-config";
+export {
+	oauthStartRedirect,
+	type SocialOAuthStartQuery,
+	type SsoOAuthStartQuery,
+	socialOAuthStartQuery,
+	ssoOAuthStartQuery,
+} from "./oauth-start-query";
+export { socialOAuthStartURL, ssoOAuthStartURL } from "./oauth-start-url";
+export {
 	canChangeRole,
 	canManageConnections,
 	canManageCurrency,

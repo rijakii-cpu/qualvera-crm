@@ -100,18 +100,32 @@ full list. Never commit a real secret.
 | `APP_URL` | yes | yes | — | App origin, e.g. `https://<app>.vercel.app` |
 | `AGENT_URL` | yes | yes | yes | Agent origin **with scheme**, e.g. `https://<agent>.vercel.app` |
 
-The browser auth client talks to the **API origin**. The app build inlines
-`API_URL` as `NEXT_PUBLIC_API_URL`. OAuth state and session cookies then
-live on the API host, which is also `/api/auth/callback/*`. Set `API_URL`
-and `APP_URL` on **both** the app and API projects when those hosts are
-`*.vercel.app`. Better Auth `trustedOrigins` already includes `APP_URL`
-and `API_URL`. CORS with credentials already allows the app Origin.
+The app build inlines `API_URL` as `NEXT_PUBLIC_API_URL`. Keep that value
+as the API origin.
+
+Google and Microsoft sign-in start with a **first-party top-level
+navigation** to the API host (`/oauth/social/start`). The API sets the
+OAuth state cookie on its own origin and then 302s to the provider.
+Google returns to `/api/auth/callback/google` on that same host, so the
+callback can read the cookie.
+
+Do **not** start social OAuth with `signIn.social()` over fetch/XHR from
+the app origin. Chrome treats the API `Set-Cookie` as a third-party
+cookie and drops it. The callback then returns
+`/sign-in?error=state_mismatch`.
 
 Do **not** set `AUTH_COOKIE_DOMAIN` or `crossSubDomainCookies` for
 `*.vercel.app`. `qualvera-crm-app.vercel.app` and
-`qualvera-crm-api.vercel.app` do not share a cookie domain. Set
-`AUTH_COOKIE_DOMAIN` only when the app and API share a custom parent
-(`.qualvera.com`).
+`qualvera-crm-api.vercel.app` do not share a cookie domain.
+
+The durable cookie topology is a custom shared parent
+(`.qualvera.com`) plus `AUTH_COOKIE_DOMAIN`. Then the app and API share
+state and session cookies without a first-party start hop. Until that
+exists, the first-party OAuth start is the split-host path.
+
+Set `API_URL` and `APP_URL` on **both** the app and API projects when
+those hosts are `*.vercel.app`. Better Auth `trustedOrigins` already
+includes both.
 
 `ALLOWED_SIGN_IN` is the whole authorisation model. An empty list lets
 nobody in. Start with one address; widen to the Qualvera domain later:
@@ -178,11 +192,14 @@ Pro. Hobby silently becomes daily.
 
 If the sign-in page says there is no method configured, the Google or
 Microsoft pair is missing on the **API** project. If Google returns
-`/sign-in?error=state_mismatch`, the browser stored the OAuth state
-cookie on the app host. The auth client must use `NEXT_PUBLIC_API_URL`.
-If the provider accepts the login and the app bounces between `/sign-in`
+`/sign-in?error=state_mismatch`, the OAuth start ran as a cross-site
+XHR and Chrome dropped the API state cookie. Sign-in must navigate
+the top-level window to the API `/oauth/social/start` URL. If the
+provider accepts the login and the app bounces between `/sign-in`
 and `/`, `APP_URL` / `API_URL` / `BETTER_AUTH_SECRET` do not match
-across app and API.
+across app and API, or the session cookie is on the API host and the
+app proxy cannot read it. Use a custom shared parent plus
+`AUTH_COOKIE_DOMAIN` for that last case.
 
 ## Deploy order
 
