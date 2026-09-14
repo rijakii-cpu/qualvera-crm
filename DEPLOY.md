@@ -59,8 +59,14 @@ extensionless `../src/create-app` import (`dpl_8tUjtEfZNTeUw8Ew2W1Y38EbRjHp`).
 Dashboard path: Project → Settings → General (Root Directory) and
 Settings → Build and Deployment.
 
-The repository-root `vercel.json` pins install, build, and crons. Confirm
-these values on **qualvera-crm-api**:
+The repository-root `vercel.json` holds crons only. It must not set
+`buildCommand` or `installCommand`. Vercel applies that file even when
+a project's Root Directory is `apps/app` or `apps/agent`. A no-cache
+redeploy of `c124380` still ran `bun apps/api/scripts/build-func.mjs`
+and failed `BUILD_UTILS_SPAWN_1` on both of those projects.
+
+API install and build come from the **qualvera-crm-api** dashboard, not
+from the repository-root `vercel.json`:
 
 | Setting | Required value |
 | --- | --- |
@@ -71,9 +77,10 @@ these values on **qualvera-crm-api**:
 | Output Directory | **empty** (no `public`) |
 | Node.js Version | `22.x` |
 
-`qualvera-crm-app` and `qualvera-crm-agent` keep Root Directory `apps/app`
-and `apps/agent`. Those projects do not read the repository-root
-`vercel.json`.
+`qualvera-crm-app` uses Root Directory `apps/app` and
+`apps/app/vercel.json` (`framework`: `nextjs`). `qualvera-crm-agent`
+uses Root Directory `apps/agent` and `apps/agent/vercel.json`
+(`framework`: `eve`). Those files must not run `build-func.mjs`.
 
 If a dashboard override still says `public`, turn Override off. Then
 Redeploy `release` without the build cache.
