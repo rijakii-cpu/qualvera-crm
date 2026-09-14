@@ -76,6 +76,9 @@ list fails closed.** Parsed on demand. `packages/auth/src/workspace.ts`.
   point the redirect silently becomes that host. `ssoCallbackBase()` is the
   pattern; `slackRedirectUri` in `auth.ts` once was not.
 - **`AUTH_COOKIE_DOMAIN`** only for API and app on different subdomains of one parent.
+  Split `*.vercel.app` hosts cannot share a cookie domain. Social sign-in starts
+  as a first-party navigation to the API (`/oauth/social/start`) so the state
+  cookie is first-party on the callback host.
 - **`AGENT_URL`** is the agent's deployment, server-side only, and **must include the
   scheme** — validated at boot, or it throws when a task is queued instead.
 - **`AUTH_COOKIE_PREFIX` is `crm`** (`@crm/auth/cookies`), set on **both**

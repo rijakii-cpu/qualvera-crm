@@ -1,6 +1,6 @@
 "use client";
 
-import { signIn } from "@crm/auth/client";
+import { startSsoOAuth } from "@crm/auth/client";
 import { Button } from "@crm/ui/components/button";
 import { Spinner } from "@crm/ui/components/spinner";
 import { useState } from "react";
@@ -14,19 +14,17 @@ export type SsoProvider = {
 export function SsoSignIn({ providers }: { providers: SsoProvider[] }) {
 	const [pending, setPending] = useState<string | null>(null);
 
-	async function handleClick(providerId: string) {
+	function handleClick(providerId: string) {
 		setPending(providerId);
 
-		const origin = window.location.origin;
-
-		const { error } = await signIn.sso({
-			providerId,
-			callbackURL: `${origin}/`,
-			errorCallbackURL: `${origin}/sign-in`,
-		});
-
-		if (error) {
-			toast.error(error.message ?? "Could not reach the sign-in service.");
+		try {
+			startSsoOAuth(providerId);
+		} catch (error) {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Could not reach the sign-in service.",
+			);
 			setPending(null);
 		}
 	}

@@ -1,6 +1,6 @@
 "use client";
 
-import { signIn } from "@crm/auth/client";
+import { startSocialOAuth } from "@crm/auth/client";
 import type { MailboxProviderId } from "@crm/auth/scopes";
 import GoogleLogo from "@crm/ui/components/brand-logos/google";
 import MicrosoftLogo from "@crm/ui/components/brand-logos/microsoft";
@@ -30,27 +30,21 @@ export function SocialSignIn({ provider }: { provider: MailboxProviderId }) {
 		toast.error(message ?? "Could not reach the sign-in service.");
 	}
 
-	async function handleClick() {
+	function handleClick() {
 		setPending(true);
 
-		const origin = window.location.origin;
-
-		const { error } = await signIn.social({
-			provider,
-			callbackURL: `${origin}/`,
-			errorCallbackURL: `${origin}/sign-in`,
-		});
-
-		if (error) fail(error.message);
+		try {
+			startSocialOAuth(provider);
+		} catch (error) {
+			fail(error instanceof Error ? error.message : undefined);
+		}
 	}
 
 	return (
 		<Button
 			className="w-full"
 			disabled={pending}
-			onClick={() => {
-				handleClick().catch(() => fail());
-			}}
+			onClick={handleClick}
 			type="button"
 			variant="outline"
 		>

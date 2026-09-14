@@ -78,4 +78,30 @@ describe("Auth (e2e)", () => {
 
 		expect(response.status).toBe(401);
 	});
+
+	it("starts Google as a first-party redirect and sets the state cookie", async () => {
+		const response = await request(app.getHttpServer())
+			.get("/oauth/social/start")
+			.query({
+				provider: "google",
+				callbackURL: "http://localhost:3000/",
+				errorCallbackURL: "http://localhost:3000/sign-in",
+			})
+			.set("Origin", "http://localhost:3000")
+			.redirects(0);
+
+		expect(response.status).toBe(302);
+		expect(response.headers.location).toContain("accounts.google.com");
+		expect(String(response.headers["set-cookie"] ?? "")).toMatch(/state/i);
+	});
+
+	it("rejects a social start without a provider", async () => {
+		await request(app.getHttpServer())
+			.get("/oauth/social/start")
+			.query({
+				callbackURL: "http://localhost:3000/",
+				errorCallbackURL: "http://localhost:3000/sign-in",
+			})
+			.expect(400);
+	});
 });

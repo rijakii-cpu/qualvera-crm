@@ -43,16 +43,15 @@ export const POST = auth.handler;
 ### Client
 
 ```ts
-import { signIn, signOut, useSession } from "@crm/auth/client";
+import { startSocialOAuth, signOut, useSession } from "@crm/auth/client";
 
-await signIn.social({ provider: "google", callbackURL: "/" });
+startSocialOAuth("google");
 ```
 
-`NEXT_PUBLIC_API_URL` decides which origin the client talks to. It must point at
-whichever process mounts the handler — the NestJS API. The Next.js app inlines
-it at build time from `API_URL`, in `next.config.ts`, so there is one variable
-rather than two spellings of one origin. Unset, the client uses the current
-origin.
+`NEXT_PUBLIC_API_URL` is the API origin. Social sign-in navigates the top-level
+window to that host so the OAuth state cookie is first-party. The Next.js app
+inlines it at build time from `API_URL`, in `next.config.ts`. Unset, the
+client uses the current origin.
 
 The client plugin list mirrors the server plugin list. Keep them in sync or the
 inferred client API will drift from the routes the server exposes.
@@ -99,5 +98,8 @@ bun run db:migrate      # create the migration
   here so the package stays framework-agnostic; add it — along with `next` as a
   dependency — once an app relies on setting cookies from server actions.
 - **Cross-origin cookies.** On localhost the API and the app differ only by
-  port, which cookies ignore. Deployed on separate subdomains they need
-  `AUTH_COOKIE_DOMAIN` set to the shared parent (`.example.com`).
+  port, which cookies ignore. Split `*.vercel.app` hosts cannot share a
+  cookie domain. Social sign-in starts as a first-party navigation to
+  `/oauth/social/start` on the API so Chrome stores the state cookie.
+  Set `AUTH_COOKIE_DOMAIN` only when the app and API share a custom
+  parent (`.example.com`).
